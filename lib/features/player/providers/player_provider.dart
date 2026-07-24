@@ -37,6 +37,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   StreamSubscription? _positionSubscription;
   StreamSubscription? _durationSubscription;
   StreamSubscription? _playingSubscription;
+  StreamSubscription? _playerStateSubscription;
 
   PlayerNotifier(this.ref) : super(PlayerState()) {
     final audioService = ref.read(audioPlayerServiceProvider);
@@ -53,6 +54,13 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
 
     _playingSubscription = audioService.playingStream.listen((playing) {
       state = state.copyWith(isPlaying: playing);
+    });
+
+    _playerStateSubscription = audioService.playerStateStream.listen((audioState) {
+      if (audioState.processingState == ProcessingState.completed) {
+        audioService.pause();
+        audioService.seek(Duration.zero);
+      }
     });
   }
 
@@ -102,6 +110,7 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
     _playingSubscription?.cancel();
+    _playerStateSubscription?.cancel();
     super.dispose();
   }
 }

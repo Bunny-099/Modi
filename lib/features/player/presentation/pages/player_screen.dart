@@ -120,7 +120,10 @@ class PlayerScreen extends ConsumerWidget {
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 14.0),
               ),
               child: Slider(
-                value: playerState.position.inMilliseconds.toDouble(),
+                value: playerState.position.inMilliseconds.toDouble().clamp(
+                  0.0,
+                  playerState.duration.inMilliseconds.toDouble(),
+                ),
                 max: playerState.duration.inMilliseconds.toDouble(),
                 onChanged: (value) {
                   playerNotifier.seek(Duration(milliseconds: value.toInt()));
