@@ -17,6 +17,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Providers se data watch kar rahe hain
     final recentlyPlayed = ref.watch(recentlyPlayedProvider);
+    final allSongs = ref.watch(allSongsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -38,7 +39,7 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Agar recently played list khali nahi hai, tabhi yeh section dikhega
+              // Recently Played section
               if (recentlyPlayed.isNotEmpty) ...[
                 const AppText.subtitle('Recently Played'),
                 const SizedBox(height: 16),
@@ -49,12 +50,30 @@ class HomeScreen extends ConsumerWidget {
                     physics: const BouncingScrollPhysics(),
                     itemCount: recentlyPlayed.length,
                     itemBuilder: (context, index) {
-                      return _buildRecentlyPlayedCard(context, recentlyPlayed[index], ref);
+                      return _buildSongCard(context, recentlyPlayed[index], ref);
                     },
                   ),
                 ),
                 const SizedBox(height: 24),
               ],
+
+              // Trending Section (Showing all songs for now)
+              const AppText.subtitle('Trending'),
+              const SizedBox(height: 16),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.8,
+                ),
+                itemCount: allSongs.length,
+                itemBuilder: (context, index) {
+                  return _buildSongCard(context, allSongs[index], ref, isGrid: true);
+                },
+              ),
             ],
           ),
         ),
@@ -62,22 +81,19 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  // Widget for Recently Played Horizontal Cards
-  Widget _buildRecentlyPlayedCard(BuildContext context, MusicModel song, WidgetRef ref) {
+  // Widget for Song Card (Used in both Horizontal and Grid)
+  Widget _buildSongCard(BuildContext context, MusicModel song, WidgetRef ref, {bool isGrid = false}) {
     return GestureDetector(
       onTap: () {
         ref.read(playerProvider.notifier).playSong(song);
         context.pushNamed(RouteNames.player);
       },
-      child: Container(
-        width: 120,
-        margin: const EdgeInsets.only(right: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 120,
-              width: 120,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Container(
+              width: isGrid ? double.infinity : 120,
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
@@ -92,13 +108,17 @@ class HomeScreen extends ConsumerWidget {
                   ? const Icon(Icons.music_note_rounded, size: 40, color: AppColors.primary)
                   : null,
             ),
-            const SizedBox(height: 8),
-            AppText.body(
-              song.title,
-              maxLines: 1,
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          AppText.body(
+            song.title,
+            maxLines: 1,
+          ),
+          AppText.caption(
+            song.artist,
+            color: AppColors.textSecondary,
+          ),
+        ],
       ),
     );
   }
