@@ -117,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
               const SizedBox(height: 12),
               const AppText.bodyLarge(
-                'भारत की प्रेरणादायक आवाज़ें',
+                'सुर में गाने सुनिए मोदी जी के साथ।',
                 color: AppColors.textSecondary,
               ),
               const SizedBox(height: 32),
