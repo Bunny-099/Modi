@@ -1,0 +1,142 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../app/router/route_names.dart';
+import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_icons.dart';
+import '../../../../core/widgets/app_text.dart';
+import '../../../home/providers/home_provider.dart';
+
+class LibraryScreen extends ConsumerWidget {
+  const LibraryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Hum wahi allSongsProvider use kar rahe hain jo humne Home ke liye banaya tha
+    final allSongs = ref.watch(allSongsProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const AppText.heading('Your Library', color: AppColors.textPrimary),
+        actions: [
+          IconButton(
+            icon: const Icon(AppIcons.search, color: AppColors.textPrimary),
+            onPressed: () => context.pushNamed(RouteNames.search),
+          ),
+        ],
+      ),
+      body: DefaultTabController(
+        length: 3,
+        child: Column(
+          children: [
+            const TabBar(
+              indicatorColor: AppColors.primary,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textSecondary,
+              tabs: [
+                Tab(text: 'Playlists'),
+                Tab(text: 'Favorites'),
+                Tab(text: 'All Songs'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  // 1. Playlists Tab (Abhi ke liye empty state)
+                  _buildPlaylistsTab(),
+
+                  // 2. Favorites Tab (Abhi ke liye empty state)
+                  _buildFavoritesTab(),
+
+                  // 3. All Songs Tab
+                  if (allSongs.isEmpty)
+                    const Center(
+                      child: AppText.body('No songs found in library.', color: AppColors.textSecondary),
+                    )
+                  else
+                    ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: allSongs.length,
+                      itemBuilder: (context, index) {
+                        final song = allSongs[index];
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          leading: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(10),
+                              image: song.coverUrl != null
+                                  ? DecorationImage(
+                                image: NetworkImage(song.coverUrl!),
+                                fit: BoxFit.cover,
+                              )
+                                  : null,
+                            ),
+                            child: song.coverUrl == null
+                                ? const Icon(Icons.music_note_rounded, color: AppColors.primary)
+                                : null,
+                          ),
+                          title: AppText.body(song.title, maxLines: 1),
+                          subtitle: AppText.caption(song.artist ?? 'Unknown Artist', maxLines: 1),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
+                            onPressed: () {
+                              // TODO: Show options menu
+                            },
+                          ),
+                          onTap: () {
+                            // Play song and go to player
+                            context.pushNamed(RouteNames.player);
+                          },
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaylistsTab() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.queue_music_rounded, size: 64, color: AppColors.surface),
+        const SizedBox(height: 16),
+        const AppText.body('No playlists created yet.', color: AppColors.textSecondary),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          ),
+          child: const Text('Create Playlist'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFavoritesTab() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(AppIcons.favoriteOutline, size: 64, color: AppColors.surface),
+          SizedBox(height: 16),
+          AppText.body('Your favorite tracks will appear here.', color: AppColors.textSecondary),
+        ],
+      ),
+    );
+  }
+}
