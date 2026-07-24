@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../player/providers/player_provider.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_icons.dart';
@@ -49,7 +50,7 @@ class HomeScreen extends ConsumerWidget {
                     physics: const BouncingScrollPhysics(),
                     itemCount: recentlyPlayed.length,
                     itemBuilder: (context, index) {
-                      return _buildRecentlyPlayedCard(context, recentlyPlayed[index]);
+                      return _buildRecentlyPlayedCard(context, recentlyPlayed[index], ref);
                     },
                   ),
                 ),
@@ -73,7 +74,7 @@ class HomeScreen extends ConsumerWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: allSongs.length,
                   itemBuilder: (context, index) {
-                    return _buildSongTile(context, allSongs[index]);
+                    return _buildSongTile(context, allSongs[index], ref);
                   },
                 ),
             ],
@@ -84,10 +85,10 @@ class HomeScreen extends ConsumerWidget {
   }
 
   // Widget for Recently Played Horizontal Cards
-  Widget _buildRecentlyPlayedCard(BuildContext context, MusicModel song) {
+  Widget _buildRecentlyPlayedCard(BuildContext context, MusicModel song, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
-        // TODO: Play song and navigate to player screen
+        ref.read(playerProvider.notifier).playSong(song);
         context.pushNamed(RouteNames.player);
       },
       child: Container(
@@ -102,14 +103,14 @@ class HomeScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
-                image: song.coverUrl != null
+                image: song.coverImage.isNotEmpty
                     ? DecorationImage(
-                  image: NetworkImage(song.coverUrl!),
+                  image: AssetImage(song.coverImage),
                   fit: BoxFit.cover,
                 )
                     : null,
               ),
-              child: song.coverUrl == null
+              child: song.coverImage.isEmpty
                   ? const Icon(Icons.music_note_rounded, size: 40, color: AppColors.primary)
                   : null,
             ),
@@ -125,7 +126,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   // Widget for All Songs Vertical List Items
-  Widget _buildSongTile(BuildContext context, MusicModel song) {
+  Widget _buildSongTile(BuildContext context, MusicModel song, WidgetRef ref) {
     return ListTile(
       contentPadding: const EdgeInsets.only(bottom: 8),
       leading: Container(
@@ -134,14 +135,14 @@ class HomeScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
-          image: song.coverUrl != null
+          image: song.coverImage.isNotEmpty
               ? DecorationImage(
-            image: NetworkImage(song.coverUrl!),
+            image: AssetImage(song.coverImage),
             fit: BoxFit.cover,
           )
               : null,
         ),
-        child: song.coverUrl == null
+        child: song.coverImage.isEmpty
             ? const Icon(Icons.music_note_rounded, color: AppColors.primary)
             : null,
       ),
@@ -150,12 +151,12 @@ class HomeScreen extends ConsumerWidget {
       trailing: IconButton(
         icon: const Icon(AppIcons.play, color: AppColors.primary),
         onPressed: () {
-          // TODO: Play song
+          ref.read(playerProvider.notifier).playSong(song);
           context.pushNamed(RouteNames.player);
         },
       ),
       onTap: () {
-        // TODO: Play song and navigate to player screen
+        ref.read(playerProvider.notifier).playSong(song);
         context.pushNamed(RouteNames.player);
       },
     );

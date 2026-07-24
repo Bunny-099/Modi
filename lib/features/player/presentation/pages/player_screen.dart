@@ -5,14 +5,29 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_icons.dart';
 import '../../../../core/widgets/app_text.dart';
+import '../../providers/player_provider.dart';
 
 class PlayerScreen extends ConsumerWidget {
   const PlayerScreen({super.key});
 
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: Aage chal kar hum yahan Riverpod se audio player ka state watch karenge
-    // Jaise current song, playing status, aur duration.
+    final playerState = ref.watch(playerProvider);
+    final playerNotifier = ref.read(playerProvider.notifier);
+    final song = playerState.currentSong;
+
+    if (song == null) {
+      return const Scaffold(
+        body: Center(child: AppText.body('No song selected')),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -20,7 +35,6 @@ class PlayerScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          // Back aane ke liye down arrow, jo ek bottom sheet wali feel deta hai
           icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textPrimary, size: 32),
           onPressed: () => context.pop(),
         ),
@@ -29,9 +43,7 @@ class PlayerScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert_rounded, color: AppColors.textPrimary),
-            onPressed: () {
-              // TODO: Show bottom sheet for options (Like add to playlist)
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -54,39 +66,50 @@ class PlayerScreen extends ConsumerWidget {
                     offset: const Offset(0, 10),
                   ),
                 ],
+                image: song.coverImage.isNotEmpty
+                    ? DecorationImage(
+                        image: AssetImage(song.coverImage),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: const Center(
-                // Dummy Icon jab tak gaane ki image na aaye
-                child: Icon(Icons.music_note_rounded, size: 80, color: AppColors.primary),
-              ),
+              child: song.coverImage.isEmpty
+                  ? const Center(
+                      child: Icon(Icons.music_note_rounded, size: 80, color: AppColors.primary),
+                    )
+                  : null,
             ),
             const SizedBox(height: 40),
 
-            // 2. Song Info (Title, Artist & Favorite Button)
+            // 2. Song Info
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      AppText.heading('Song Title Here', maxLines: 1),
-                      SizedBox(height: 4),
-                      AppText.body('Artist Name', color: AppColors.textSecondary, maxLines: 1),
+                    children: [
+                      AppText.heading(song.title, maxLines: 1),
+                      const SizedBox(height: 4),
+                      AppText.body(song.artist ?? 'Unknown Artist', color: AppColors.textSecondary, maxLines: 1),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(AppIcons.favoriteOutline, color: AppColors.primary, size: 28),
+                  icon: Icon(
+                    song.isFavorite ? AppIcons.favorite : AppIcons.favoriteOutline,
+                    color: AppColors.primary,
+                    size: 28,
+                  ),
                   onPressed: () {
-                    // TODO: Toggle favorite status
+                    // TODO: Toggle favorite status in Hive
                   },
                 ),
               ],
             ),
             const SizedBox(height: 24),
 
-            // 3. Seekbar (Progress Slider)
+            // 3. Seekbar
             SliderTheme(
               data: SliderThemeData(
                 activeTrackColor: AppColors.primary,
@@ -97,19 +120,19 @@ class PlayerScreen extends ConsumerWidget {
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 14.0),
               ),
               child: Slider(
-                value: 0.3, // Dummy progress value (30%)
+                value: playerState.position.inMilliseconds.toDouble(),
+                max: playerState.duration.inMilliseconds.toDouble(),
                 onChanged: (value) {
-                  // TODO: Seek audio
+                  playerNotifier.seek(Duration(milliseconds: value.toInt()));
                 },
               ),
             ),
 
-            // Duration Text (e.g., 01:15 / 03:45)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                AppText.caption('01:15', color: AppColors.textSecondary),
-                AppText.caption('03:45', color: AppColors.textSecondary),
+              children: [
+                AppText.caption(_formatDuration(playerState.position), color: AppColors.textSecondary),
+                AppText.caption(_formatDuration(playerState.duration), color: AppColors.textSecondary),
               ],
             ),
             const SizedBox(height: 32),
@@ -126,7 +149,6 @@ class PlayerScreen extends ConsumerWidget {
                   icon: const Icon(AppIcons.skipPrevious, size: 36, color: AppColors.textPrimary),
                   onPressed: () {},
                 ),
-                // Play/Pause Main Button
                 Container(
                   height: 72,
                   width: 72,
@@ -135,8 +157,12 @@ class PlayerScreen extends ConsumerWidget {
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(AppIcons.play, size: 36, color: Colors.white),
-                    onPressed: () {},
+                    icon: Icon(
+                      playerState.isPlaying ? AppIcons.pause : AppIcons.play,
+                      size: 36,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => playerNotifier.togglePlayPause(),
                   ),
                 ),
                 IconButton(

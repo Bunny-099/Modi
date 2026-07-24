@@ -10,43 +10,54 @@ class DefaultMusicLoader {
   static Future<void> loadDefaultData() async {
     final box = Hive.box<MusicModel>(HiveBoxes.musicBox);
 
-    if (box.isEmpty) {
-      final defaultSongs = [
-        MusicModel(
-          id: '1',
-          title: 'Welcome Speech',
-          artist: 'Narendra Modi',
-          album: 'Speeches',
-          category: MusicCategory.speech.displayName,
-          coverImage: AssetPaths.defaultAlbumArt,
-          audioPath: AssetPaths.welcomeAudio,
-          duration: 180,
-        ),
-        MusicModel(
-          id: '2',
-          title: 'Patriotic Anthem',
-          artist: 'Various Artists',
-          album: 'Desh Bhakti',
-          category: MusicCategory.patriotic.displayName,
-          coverImage: AssetPaths.defaultAlbumArt,
-          audioPath: '${AssetPaths.songsDir}patriotic_1.mp3',
-          duration: 210,
-        ),
-        MusicModel(
-          id: '3',
-          title: 'Morning Bhajan',
-          artist: 'Traditional',
-          album: 'Devotional',
-          category: MusicCategory.bhajan.displayName,
-          coverImage: AssetPaths.defaultAlbumArt,
-          audioPath: '${AssetPaths.songsDir}bhajan_1.mp3',
-          duration: 320,
-        ),
-      ];
+    // clear the box to remove old dummy data
+    await box.clear();
 
-      for (var song in defaultSongs) {
-        await box.put(song.id, song);
-      }
+    final defaultSongs = [
+      MusicModel(
+        id: '1',
+        title: 'Maja Nahi Aa Raha',
+        artist: 'Narendra Modi',
+        album: 'Speeches',
+        category: MusicCategory.speech.displayName,
+        coverImage: AssetPaths.modiRock,
+        audioPath: AssetPaths.majaNahiAaRaha,
+        duration: 5, // Just a placeholder, audio service will get actual duration
+      ),
+      MusicModel(
+        id: '2',
+        title: 'Dope Shop',
+        artist: 'Deep Jandu',
+        album: 'Single',
+        category: MusicCategory.patriotic.displayName,
+        coverImage: AssetPaths.modiRock,
+        audioPath: AssetPaths.dopeShop,
+        duration: 180,
+      ),
+      MusicModel(
+        id: '3',
+        title: 'Saiyaara',
+        artist: 'Mohit Chauhan',
+        album: 'Ek Tha Tiger',
+        category: MusicCategory.bhajan.displayName,
+        coverImage: AssetPaths.modiRock,
+        audioPath: AssetPaths.saiyaara,
+        duration: 250,
+      ),
+      MusicModel(
+        id: '4',
+        title: 'Teri Meri Prem Kahani',
+        artist: 'Rahat Fateh Ali Khan',
+        album: 'Bodyguard',
+        category: MusicCategory.bhajan.displayName,
+        coverImage: AssetPaths.modiRock,
+        audioPath: AssetPaths.teriMeriPremKahani,
+        duration: 320,
+      ),
+    ];
+
+    for (var song in defaultSongs) {
+      await box.put(song.id, song);
     }
   }
 }
