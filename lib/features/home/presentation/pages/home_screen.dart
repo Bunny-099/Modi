@@ -17,7 +17,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Providers se data watch kar rahe hain
     final recentlyPlayed = ref.watch(recentlyPlayedProvider);
-    final allSongs = ref.watch(allSongsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -56,27 +55,6 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
               ],
-
-              // All Songs Section
-              const AppText.subtitle('All Songs'),
-              const SizedBox(height: 16),
-
-              if (allSongs.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 40),
-                    child: AppText.body('No songs found in library.'),
-                  ),
-                )
-              else
-                ListView.builder(
-                  shrinkWrap: true, // Isko true karna zaroori hai SingleChildScrollView ke andar
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: allSongs.length,
-                  itemBuilder: (context, index) {
-                    return _buildSongTile(context, allSongs[index], ref);
-                  },
-                ),
             ],
           ),
         ),
@@ -105,9 +83,9 @@ class HomeScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 image: song.coverImage.isNotEmpty
                     ? DecorationImage(
-                  image: AssetImage(song.coverImage),
-                  fit: BoxFit.cover,
-                )
+                        image: AssetImage(song.coverImage),
+                        fit: BoxFit.cover,
+                      )
                     : null,
               ),
               child: song.coverImage.isEmpty
@@ -122,43 +100,6 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-
-  // Widget for All Songs Vertical List Items
-  Widget _buildSongTile(BuildContext context, MusicModel song, WidgetRef ref) {
-    return ListTile(
-      contentPadding: const EdgeInsets.only(bottom: 8),
-      leading: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          image: song.coverImage.isNotEmpty
-              ? DecorationImage(
-            image: AssetImage(song.coverImage),
-            fit: BoxFit.cover,
-          )
-              : null,
-        ),
-        child: song.coverImage.isEmpty
-            ? const Icon(Icons.music_note_rounded, color: AppColors.primary)
-            : null,
-      ),
-      title: AppText.body(song.title, maxLines: 1),
-      subtitle: AppText.caption(song.artist ?? 'Unknown Artist', maxLines: 1),
-      trailing: IconButton(
-        icon: const Icon(AppIcons.play, color: AppColors.primary),
-        onPressed: () {
-          ref.read(playerProvider.notifier).playSong(song);
-          context.pushNamed(RouteNames.player);
-        },
-      ),
-      onTap: () {
-        ref.read(playerProvider.notifier).playSong(song);
-        context.pushNamed(RouteNames.player);
-      },
     );
   }
 }

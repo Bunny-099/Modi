@@ -7,6 +7,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_icons.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../../home/providers/home_provider.dart';
+import '../../../player/providers/player_provider.dart';
 
 class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
@@ -72,19 +73,19 @@ class LibraryScreen extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: AppColors.surface,
                               borderRadius: BorderRadius.circular(10),
-                              image: song.coverUrl != null
+                              image: song.coverImage.isNotEmpty
                                   ? DecorationImage(
-                                image: NetworkImage(song.coverUrl!),
-                                fit: BoxFit.cover,
-                              )
+                                      image: AssetImage(song.coverImage),
+                                      fit: BoxFit.cover,
+                                    )
                                   : null,
                             ),
-                            child: song.coverUrl == null
+                            child: song.coverImage.isEmpty
                                 ? const Icon(Icons.music_note_rounded, color: AppColors.primary)
                                 : null,
                           ),
                           title: AppText.body(song.title, maxLines: 1),
-                          subtitle: AppText.caption(song.artist ?? 'Unknown Artist', maxLines: 1),
+                          subtitle: AppText.caption(song.artist, maxLines: 1),
                           trailing: IconButton(
                             icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
                             onPressed: () {
@@ -93,6 +94,7 @@ class LibraryScreen extends ConsumerWidget {
                           ),
                           onTap: () {
                             // Play song and go to player
+                            ref.read(playerProvider.notifier).playSong(song);
                             context.pushNamed(RouteNames.player);
                           },
                         );

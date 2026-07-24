@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_icons.dart';
@@ -29,45 +31,25 @@ class MainWrapper extends ConsumerWidget {
         index: currentIndex,
         children: screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          backgroundColor: AppColors.background,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textSecondary,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          currentIndex: currentIndex,
-          onTap: (index) {
-            // Tab change hone par provider ko update karenge
-            ref.read(bottomNavIndexProvider.notifier).state = index;
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(AppIcons.home),
-              ),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(bottom: 4.0),
-                child: Icon(AppIcons.library),
-              ),
-              label: 'Library',
-            ),
-          ],
-        ),
+      bottomNavigationBar: CurvedNavigationBar(
+        backgroundColor: Colors.transparent,
+        color: AppColors.surface,
+        buttonBackgroundColor: AppColors.primary,
+        height: 75,
+        index: currentIndex,
+        items: const [
+          CurvedNavigationBarItem(
+            child: Icon(AppIcons.home, color: AppColors.textPrimary),
+            label: 'Home',
+          ),
+          CurvedNavigationBarItem(
+            child: Icon(AppIcons.library, color: AppColors.textPrimary),
+            label: 'Library',
+          ),
+        ],
+        onTap: (index) {
+          ref.read(bottomNavIndexProvider.notifier).state = index;
+        },
       ),
     );
   }
