@@ -82,4 +82,18 @@ class MusicModel extends HiveObject {
       lastPlayed: lastPlayed ?? this.lastPlayed,
     );
   }
+  // Supabase se data lene ke liye ye method MusicModel class ke andar daal do
+  factory MusicModel.fromJson(Map<String, dynamic> json) {
+    return MusicModel(
+      id: json['id'].toString(),
+      title: json['title'] ?? '',
+      artist: json['artist'] ?? 'Unknown',
+      album: json['album'] ?? 'Single',
+      category: json['category'] ?? 'General',
+      coverImage: json['cover_url'] ?? '',
+      audioPath: json['audio_url'] ?? '',
+      duration: json['duration'] ?? 0,
+      isFavorite: false,
+    );
+  }
 }

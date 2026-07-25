@@ -9,8 +9,8 @@ import '../../../../core/utils/debounce.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../../../shared/models/music_model.dart';
 import '../../../home/providers/home_provider.dart';
+import '../../../player/providers/player_provider.dart';
 
-// ConsumerStatefulWidget isliye use kiya hai taaki TextField aur Debouncer ki state manage kar sakein
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
@@ -20,7 +20,6 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  // 500ms ka debounce delay set kiya hai
   final Debouncer _debouncer = Debouncer(milliseconds: 500);
 
   List<MusicModel> _searchResults = [];
@@ -29,7 +28,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _debouncer.dispose(); // Debouncer ko dispose karna zaroori hai memory leaks rokne ke liye
+    _debouncer.dispose();
     super.dispose();
   }
 
@@ -46,16 +45,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         return;
       }
 
-      // Hive database se saare gaane utha kar locally filter kar rahe hain
-      final allSongs = ref.read(allSongsProvider);
-      final lowerCaseQuery = query.toLowerCase();
-
-      setState(() {
-        _searchResults = allSongs.where((song) {
-          final titleMatch = song.title.toLowerCase().contains(lowerCaseQuery);
-          final artistMatch = (song.artist ?? '').toLowerCase().contains(lowerCaseQuery);
-          return titleMatch || artistMatch;
-        }).toList();
+      // Read the current data from allSongsProvider (which is an AsyncValue)
+      final allSongsAsync = ref.read(allSongsProvider);
+      
+      allSongsAsync.whenData((allSongs) {
+        final lowerCaseQuery = query.toLowerCase();
+        setState(() {
+          _searchResults = allSongs.where((song) {
+            final titleMatch = song.title.toLowerCase().contains(lowerCaseQuery);
+            final artistMatch = (song.artist ?? '').toLowerCase().contains(lowerCaseQuery);
+            return titleMatch || artistMatch;
+          }).toList();
+        });
       });
     });
   }
@@ -74,7 +75,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         title: TextField(
           controller: _searchController,
           onChanged: _onSearchChanged,
-          autofocus: true, // Screen open hote hi keyboard show hoga
+          autofocus: true,
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
           decoration: InputDecoration(
             hintText: 'Search songs, artists...',
@@ -97,7 +98,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _buildBody() {
-    // 1. Initial State (Jab kuch type na kiya ho)
     if (_searchQuery.trim().isEmpty) {
       return const Center(
         child: Column(
@@ -111,14 +111,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       );
     }
 
-    // 2. Empty State (Jab query match na kare)
     if (_searchResults.isEmpty) {
       return Center(
         child: AppText.body('No results found for "$_searchQuery"', color: AppColors.textSecondary),
       );
     }
 
-    // 3. Results State
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -133,21 +131,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(10),
-              image: song.coverUrl != null
+              image: song.coverImage.isNotEmpty
                   ? DecorationImage(
-                image: NetworkImage(song.coverUrl!),
+                image: song.coverImage.startsWith('http')
+                    ? NetworkImage(song.coverImage) as ImageProvider
+                    : AssetImage(song.coverImage),
                 fit: BoxFit.cover,
               )
                   : null,
             ),
-            child: song.coverUrl == null
+            child: song.coverImage.isEmpty
                 ? const Icon(Icons.music_note_rounded, color: AppColors.primary)
                 : null,
           ),
           title: AppText.body(song.title, maxLines: 1),
           subtitle: AppText.caption(song.artist ?? 'Unknown Artist', maxLines: 1),
           onTap: () {
-            // TODO: Yahan par hum gaana play hone ka logic add karenge
+            ref.read(playerProvider.notifier).playSong(song);
             context.pushNamed(RouteNames.player);
           },
         );

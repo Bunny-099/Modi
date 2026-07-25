@@ -13,8 +13,12 @@ class AudioPlayerService {
 
   Stream<bool> get playingStream => _player.playingStream;
 
-  Future<void> loadAudio(String assetPath) async {
-    await _player.setAsset(assetPath);
+  Future<void> loadAudio(String path) async {
+    if (path.startsWith('http')) {
+      await _player.setUrl(path);
+    } else {
+      await _player.setAsset(path);
+    }
   }
 
   Future<void> play() async {

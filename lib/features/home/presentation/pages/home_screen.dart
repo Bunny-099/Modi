@@ -15,9 +15,8 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Providers se data watch kar rahe hain
     final recentlyPlayed = ref.watch(recentlyPlayedProvider);
-    final allSongs = ref.watch(allSongsProvider);
+    final allSongsAsync = ref.watch(allSongsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -57,22 +56,33 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
               ],
 
-              // Trending Section (Showing all songs for now)
+              // Trending Section (Fetching from Supabase)
               const AppText.subtitle('Trending'),
               const SizedBox(height: 16),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.8,
+              allSongsAsync.when(
+                data: (allSongs) => GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemCount: allSongs.length,
+                  itemBuilder: (context, index) {
+                    return _buildSongCard(context, allSongs[index], ref, isGrid: true);
+                  },
                 ),
-                itemCount: allSongs.length,
-                itemBuilder: (context, index) {
-                  return _buildSongCard(context, allSongs[index], ref, isGrid: true);
-                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                ),
+                error: (err, stack) => Center(
+                  child: AppText.body('Error loading songs: $err', color: Colors.red),
+                ),
               ),
             ],
           ),
@@ -81,7 +91,6 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  // Widget for Song Card (Used in both Horizontal and Grid)
   Widget _buildSongCard(BuildContext context, MusicModel song, WidgetRef ref, {bool isGrid = false}) {
     return GestureDetector(
       onTap: () {
@@ -99,7 +108,9 @@ class HomeScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 image: song.coverImage.isNotEmpty
                     ? DecorationImage(
-                        image: AssetImage(song.coverImage),
+                        image: song.coverImage.startsWith('http')
+                            ? NetworkImage(song.coverImage) as ImageProvider
+                            : AssetImage(song.coverImage),
                         fit: BoxFit.cover,
                       )
                     : null,

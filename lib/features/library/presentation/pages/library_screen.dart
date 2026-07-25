@@ -14,8 +14,7 @@ class LibraryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Hum wahi allSongsProvider use kar rahe hain jo humne Home ke liye banaya tha
-    final allSongs = ref.watch(allSongsProvider);
+    final allSongsAsync = ref.watch(allSongsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -47,59 +46,57 @@ class LibraryScreen extends ConsumerWidget {
             Expanded(
               child: TabBarView(
                 children: [
-                  // 1. Playlists Tab (Abhi ke liye empty state)
                   _buildPlaylistsTab(),
-
-                  // 2. Favorites Tab (Abhi ke liye empty state)
                   _buildFavoritesTab(),
-
-                  // 3. All Songs Tab
-                  if (allSongs.isEmpty)
-                    const Center(
-                      child: AppText.body('No songs found in library.', color: AppColors.textSecondary),
-                    )
-                  else
-                    ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: allSongs.length,
-                      itemBuilder: (context, index) {
-                        final song = allSongs[index];
-                        return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          leading: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(10),
-                              image: song.coverImage.isNotEmpty
-                                  ? DecorationImage(
-                                      image: AssetImage(song.coverImage),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
-                            ),
-                            child: song.coverImage.isEmpty
-                                ? const Icon(Icons.music_note_rounded, color: AppColors.primary)
-                                : null,
-                          ),
-                          title: AppText.body(song.title, maxLines: 1),
-                          subtitle: AppText.caption(song.artist, maxLines: 1),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
-                            onPressed: () {
-                              // TODO: Show options menu
+                  // 3. All Songs Tab with Async Handling
+                  allSongsAsync.when(
+                    data: (allSongs) => allSongs.isEmpty
+                        ? const Center(
+                            child: AppText.body('No songs found in library.', color: AppColors.textSecondary),
+                          )
+                        : ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: allSongs.length,
+                            itemBuilder: (context, index) {
+                              final song = allSongs[index];
+                              return ListTile(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                leading: Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(10),
+                                    image: song.coverImage.isNotEmpty
+                                        ? DecorationImage(
+                                            image: song.coverImage.startsWith('http')
+                                                ? NetworkImage(song.coverImage) as ImageProvider
+                                                : AssetImage(song.coverImage),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                  ),
+                                  child: song.coverImage.isEmpty
+                                      ? const Icon(Icons.music_note_rounded, color: AppColors.primary)
+                                      : null,
+                                ),
+                                title: AppText.body(song.title, maxLines: 1),
+                                subtitle: AppText.caption(song.artist, maxLines: 1),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
+                                  onPressed: () {},
+                                ),
+                                onTap: () {
+                                  ref.read(playerProvider.notifier).playSong(song);
+                                  context.pushNamed(RouteNames.player);
+                                },
+                              );
                             },
                           ),
-                          onTap: () {
-                            // Play song and go to player
-                            ref.read(playerProvider.notifier).playSong(song);
-                            context.pushNamed(RouteNames.player);
-                          },
-                        );
-                      },
-                    ),
+                    loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                    error: (err, stack) => Center(child: AppText.body('Error: $err', color: Colors.red)),
+                  ),
                 ],
               ),
             ),

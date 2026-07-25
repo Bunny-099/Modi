@@ -68,7 +68,9 @@ class PlayerScreen extends ConsumerWidget {
                 ],
                 image: song.coverImage.isNotEmpty
                     ? DecorationImage(
-                        image: AssetImage(song.coverImage),
+                        image: song.coverImage.startsWith('http')
+                            ? NetworkImage(song.coverImage) as ImageProvider
+                            : AssetImage(song.coverImage),
                         fit: BoxFit.cover,
                       )
                     : null,
