@@ -31,9 +31,13 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(allSongsProvider.future),
+        color: AppColors.primary,
+        backgroundColor: AppColors.surface,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,6 +90,7 @@ class HomeScreen extends ConsumerWidget {
               ),
             ],
           ),
+        ),
         ),
       ),
     );
