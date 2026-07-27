@@ -48,6 +48,8 @@ dependencies:
   equatable: ^2.1.0
   curved_labeled_navigation_bar: ^2.0.6
   supabase_flutter: ^2.16.0
+  on_audio_query: ^2.9.0
+  permission_handler: ^12.0.3
 
 dev_dependencies:
   flutter_test:

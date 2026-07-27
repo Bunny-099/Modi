@@ -16,6 +16,9 @@ class AudioPlayerService {
   Future<void> loadAudio(String path) async {
     if (path.startsWith('http')) {
       await _player.setUrl(path);
+    } else if (path.startsWith('content://') || path.startsWith('file://') || path.contains('/')) {
+      // Handle local file path or URI from on_audio_query
+      await _player.setAudioSource(AudioSource.uri(Uri.parse(path)));
     } else {
       await _player.setAsset(path);
     }

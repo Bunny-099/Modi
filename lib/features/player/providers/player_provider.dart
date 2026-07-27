@@ -82,10 +82,12 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       await audioService.loadAudio(song.audioPath);
       await audioService.play();
       
-      // Update last played in Hive
-      song.lastPlayed = DateTime.now();
-      song.playCount++;
-      await song.save();
+      // Update last played in Hive if it's not a local song (or handle local songs differently)
+      if (song.category != 'Local') {
+        song.lastPlayed = DateTime.now();
+        song.playCount++;
+        await song.save();
+      }
     } catch (e) {
       // Handle error
     }
