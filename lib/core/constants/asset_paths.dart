@@ -15,11 +15,7 @@ class AssetPaths {
   // As per SRD: Narendra Modi folded hands image and welcome audio
   static const String splashImage = '${_imagesBase}intro/welcome_image.png';
   static const String modiRock = '${_imagesBase}modi_rock.jpeg';
-  static const String welcomeAudio = '${_audioBase}intro/welcome.mp3';
   static const String majaNahiAaRaha = '${_audioBase}maja_nahi_aa_raha.mp3';
-  static const String dopeShop = '${_audioBase}dope_shop.mp3';
-  static const String saiyaara = '${_audioBase}Saiyaara.mp3';
-  static const String teriMeriPremKahani = '${_audioBase}teri_meri_prem_kahani.mp3';
 
   // --- Placeholders & Defaults ---
   // Agar kisi gaane ka cover na mile toh ye show karenge
