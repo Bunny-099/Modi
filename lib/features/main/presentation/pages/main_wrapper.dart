@@ -7,6 +7,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_icons.dart';
 import '../../../home/presentation/pages/home_screen.dart';
 import '../../../local/presentation/pages/local_screen.dart';
+import '../../../donate/presentation/pages/donate_screen.dart';
 
 // Yeh provider bottom navigation ka current index manage karega
 final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
@@ -23,6 +24,7 @@ class MainWrapper extends ConsumerWidget {
     final screens = const [
       HomeScreen(),
       LocalScreen(),
+      DonateScreen(),
     ];
 
     return Scaffold(
@@ -45,6 +47,10 @@ class MainWrapper extends ConsumerWidget {
           CurvedNavigationBarItem(
             child: Icon(Icons.folder_open_rounded, color: AppColors.textPrimary),
             label: 'Local',
+          ),
+          CurvedNavigationBarItem(
+            child: Icon(Icons.volunteer_activism_rounded, color: AppColors.textPrimary),
+            label: 'Donate',
           ),
         ],
         onTap: (index) {

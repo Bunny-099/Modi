@@ -6,7 +6,6 @@ import '../../../../core/database/default_music_loader.dart';
 import '../../../../core/widgets/app_text.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
