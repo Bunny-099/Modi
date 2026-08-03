@@ -7,6 +7,7 @@ import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_icons.dart';
 import '../../../../core/widgets/app_text.dart';
+import '../../../../core/widgets/error_widget.dart';
 import '../../../../shared/models/music_model.dart';
 import '../../providers/home_provider.dart';
 
@@ -84,8 +85,9 @@ class HomeScreen extends ConsumerWidget {
                     child: CircularProgressIndicator(color: AppColors.primary),
                   ),
                 ),
-                error: (err, stack) => Center(
-                  child: AppText.body('Error loading songs: $err', color: Colors.red),
+                error: (err, stack) => AppErrorWidget(
+                  message: err.toString(),
+                  onRetry: () => ref.refresh(allSongsProvider),
                 ),
               ),
             ],

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
-import '../../app/theme/app_spacing.dart';
 import 'app_text.dart';
-import 'app_button.dart';
 
 class AppErrorWidget extends StatelessWidget {
-  final String errorMessage;
+  final String message;
   final VoidCallback? onRetry;
+  final IconData icon;
 
   const AppErrorWidget({
     super.key,
-    required this.errorMessage,
+    required this.message,
     this.onRetry,
+    this.icon = Icons.error_outline_rounded,
   });
 
   @override
@@ -21,30 +21,32 @@ class AppErrorWidget extends StatelessWidget {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline,
+            Icon(
+              icon,
               size: 64,
-              color: AppColors.error,
+              color: AppColors.textSecondary.withOpacity(0.5),
             ),
-            AppSpacing.gapH16,
-            const AppText.titleMedium(
-              'Oops! Something went wrong.',
-              textAlign: TextAlign.center,
-            ),
-            AppSpacing.gapH8,
-            AppText.bodyMedium(
-              errorMessage,
-              color: AppColors.error,
+            const SizedBox(height: 16),
+            AppText.body(
+              message,
+              color: AppColors.textSecondary,
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
-              AppSpacing.gapH24,
-              AppButton(
-                text: 'Retry',
-                onPressed: onRetry!,
-                width: 120,
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: onRetry,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+                child: const Text('Retry'),
               ),
             ],
           ],
