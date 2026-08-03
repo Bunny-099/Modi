@@ -147,7 +147,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           title: AppText.body(song.title, maxLines: 1),
           subtitle: AppText.caption(song.artist ?? 'Unknown Artist', maxLines: 1),
           onTap: () {
-            ref.read(playerProvider.notifier).playSong(song);
+            ref.read(playerProvider.notifier).playSong(song, playlist: _searchResults);
             context.pushNamed(RouteNames.player);
           },
         );

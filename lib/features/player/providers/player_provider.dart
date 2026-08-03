@@ -6,12 +6,14 @@ import '../../../shared/models/music_model.dart';
 
 class PlayerState {
   final MusicModel? currentSong;
+  final List<MusicModel> playlist;
   final bool isPlaying;
   final Duration position;
   final Duration duration;
 
   PlayerState({
     this.currentSong,
+    this.playlist = const [],
     this.isPlaying = false,
     this.position = Duration.zero,
     this.duration = Duration.zero,
@@ -19,12 +21,14 @@ class PlayerState {
 
   PlayerState copyWith({
     MusicModel? currentSong,
+    List<MusicModel>? playlist,
     bool? isPlaying,
     Duration? position,
     Duration? duration,
   }) {
     return PlayerState(
       currentSong: currentSong ?? this.currentSong,
+      playlist: playlist ?? this.playlist,
       isPlaying: isPlaying ?? this.isPlaying,
       position: position ?? this.position,
       duration: duration ?? this.duration,
@@ -58,13 +62,12 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
 
     _playerStateSubscription = audioService.playerStateStream.listen((audioState) {
       if (audioState.processingState == ProcessingState.completed) {
-        audioService.pause();
-        audioService.seek(Duration.zero);
+        skipToNext();
       }
     });
   }
 
-  Future<void> playSong(MusicModel song) async {
+  Future<void> playSong(MusicModel song, {List<MusicModel>? playlist}) async {
     final audioService = ref.read(audioPlayerServiceProvider);
 
     if (state.currentSong?.id == song.id) {
@@ -76,7 +79,12 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       return;
     }
 
-    state = state.copyWith(currentSong: song, position: Duration.zero, duration: Duration.zero);
+    state = state.copyWith(
+      currentSong: song,
+      playlist: playlist,
+      position: Duration.zero,
+      duration: Duration.zero,
+    );
     
     try {
       await audioService.loadAudio(song.audioPath);
@@ -90,6 +98,32 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
       }
     } catch (e) {
       // Handle error
+    }
+  }
+
+  Future<void> skipToNext() async {
+    if (state.playlist.isEmpty || state.currentSong == null) return;
+
+    final currentIndex = state.playlist.indexWhere((s) => s.id == state.currentSong!.id);
+    if (currentIndex != -1 && currentIndex < state.playlist.length - 1) {
+      await playSong(state.playlist[currentIndex + 1], playlist: state.playlist);
+    } else {
+      // End of playlist - stop or loop
+      final audioService = ref.read(audioPlayerServiceProvider);
+      await audioService.pause();
+      await audioService.seek(Duration.zero);
+    }
+  }
+
+  Future<void> skipToPrevious() async {
+    if (state.playlist.isEmpty || state.currentSong == null) return;
+
+    final currentIndex = state.playlist.indexWhere((s) => s.id == state.currentSong!.id);
+    if (currentIndex > 0) {
+      await playSong(state.playlist[currentIndex - 1], playlist: state.playlist);
+    } else {
+      // Start of playlist - just seek to beginning
+      await seek(Duration.zero);
     }
   }
 

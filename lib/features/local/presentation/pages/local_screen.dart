@@ -59,7 +59,7 @@ class LocalScreen extends ConsumerWidget {
                 title: AppText.body(song.title, maxLines: 1),
                 subtitle: AppText.caption(song.artist, maxLines: 1),
                 onTap: () {
-                  ref.read(playerProvider.notifier).playSong(song);
+                  ref.read(playerProvider.notifier).playSong(song, playlist: songs);
                   context.pushNamed(RouteNames.player);
                 },
               );

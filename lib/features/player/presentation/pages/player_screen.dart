@@ -40,12 +40,6 @@ class PlayerScreen extends ConsumerWidget {
         ),
         title: const AppText.subtitle('Now Playing', color: AppColors.textSecondary),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert_rounded, color: AppColors.textPrimary),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -152,7 +146,7 @@ class PlayerScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(AppIcons.skipPrevious, size: 36, color: AppColors.textPrimary),
-                  onPressed: () {},
+                  onPressed: () => playerNotifier.skipToPrevious(),
                 ),
                 Container(
                   height: 72,
@@ -172,7 +166,7 @@ class PlayerScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   icon: const Icon(AppIcons.skipNext, size: 36, color: AppColors.textPrimary),
-                  onPressed: () {},
+                  onPressed: () => playerNotifier.skipToNext(),
                 ),
                 IconButton(
                   icon: const Icon(Icons.repeat_rounded, color: AppColors.textSecondary),

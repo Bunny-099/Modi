@@ -53,7 +53,7 @@ class HomeScreen extends ConsumerWidget {
                     physics: const BouncingScrollPhysics(),
                     itemCount: recentlyPlayed.length,
                     itemBuilder: (context, index) {
-                      return _buildSongCard(context, recentlyPlayed[index], ref);
+                      return _buildSongCard(context, recentlyPlayed[index], ref, playlist: recentlyPlayed);
                     },
                   ),
                 ),
@@ -75,7 +75,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   itemCount: allSongs.length,
                   itemBuilder: (context, index) {
-                    return _buildSongCard(context, allSongs[index], ref, isGrid: true);
+                    return _buildSongCard(context, allSongs[index], ref, isGrid: true, playlist: allSongs);
                   },
                 ),
                 loading: () => const Center(
@@ -96,10 +96,10 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSongCard(BuildContext context, MusicModel song, WidgetRef ref, {bool isGrid = false}) {
+  Widget _buildSongCard(BuildContext context, MusicModel song, WidgetRef ref, {bool isGrid = false, List<MusicModel>? playlist}) {
     return GestureDetector(
       onTap: () {
-        ref.read(playerProvider.notifier).playSong(song);
+        ref.read(playerProvider.notifier).playSong(song, playlist: playlist);
         context.pushNamed(RouteNames.player);
       },
       child: Column(

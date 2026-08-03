@@ -98,7 +98,7 @@ class LibraryScreen extends ConsumerWidget {
                                     onPressed: () {},
                                   ),
                                   onTap: () {
-                                    ref.read(playerProvider.notifier).playSong(song);
+                                    ref.read(playerProvider.notifier).playSong(song, playlist: allSongs);
                                     context.pushNamed(RouteNames.player);
                                   },
                                 );
