@@ -13,6 +13,10 @@ class AudioPlayerService {
 
   Stream<bool> get playingStream => _player.playingStream;
 
+  Stream<LoopMode> get loopModeStream => _player.loopModeStream;
+
+  Stream<bool> get shuffleModeEnabledStream => _player.shuffleModeEnabledStream;
+
   Future<void> loadAudio(String path) async {
     if (path.startsWith('http')) {
       await _player.setUrl(path);
@@ -42,6 +46,14 @@ class AudioPlayerService {
 
   Future<void> setVolume(double volume) async {
     await _player.setVolume(volume);
+  }
+
+  Future<void> setLoopMode(LoopMode loopMode) async {
+    await _player.setLoopMode(loopMode);
+  }
+
+  Future<void> setShuffleModeEnabled(bool enabled) async {
+    await _player.setShuffleModeEnabled(enabled);
   }
 
   Future<void> dispose() async {

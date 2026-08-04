@@ -10,6 +10,8 @@ class PlayerState {
   final bool isPlaying;
   final Duration position;
   final Duration duration;
+  final LoopMode loopMode;
+  final bool isShuffleEnabled;
 
   PlayerState({
     this.currentSong,
@@ -17,6 +19,8 @@ class PlayerState {
     this.isPlaying = false,
     this.position = Duration.zero,
     this.duration = Duration.zero,
+    this.loopMode = LoopMode.off,
+    this.isShuffleEnabled = false,
   });
 
   PlayerState copyWith({
@@ -25,6 +29,8 @@ class PlayerState {
     bool? isPlaying,
     Duration? position,
     Duration? duration,
+    LoopMode? loopMode,
+    bool? isShuffleEnabled,
   }) {
     return PlayerState(
       currentSong: currentSong ?? this.currentSong,
@@ -32,6 +38,8 @@ class PlayerState {
       isPlaying: isPlaying ?? this.isPlaying,
       position: position ?? this.position,
       duration: duration ?? this.duration,
+      loopMode: loopMode ?? this.loopMode,
+      isShuffleEnabled: isShuffleEnabled ?? this.isShuffleEnabled,
     );
   }
 }
@@ -42,6 +50,8 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
   StreamSubscription? _durationSubscription;
   StreamSubscription? _playingSubscription;
   StreamSubscription? _playerStateSubscription;
+  StreamSubscription? _loopModeSubscription;
+  StreamSubscription? _shuffleModeSubscription;
 
   PlayerNotifier(this.ref) : super(PlayerState()) {
     final audioService = ref.read(audioPlayerServiceProvider);
@@ -58,6 +68,14 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
 
     _playingSubscription = audioService.playingStream.listen((playing) {
       state = state.copyWith(isPlaying: playing);
+    });
+
+    _loopModeSubscription = audioService.loopModeStream.listen((loopMode) {
+      state = state.copyWith(loopMode: loopMode);
+    });
+
+    _shuffleModeSubscription = audioService.shuffleModeEnabledStream.listen((enabled) {
+      state = state.copyWith(isShuffleEnabled: enabled);
     });
 
     _playerStateSubscription = audioService.playerStateStream.listen((audioState) {
@@ -141,12 +159,39 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
     await audioService.seek(position);
   }
 
+  Future<void> toggleRepeatMode() async {
+    final audioService = ref.read(audioPlayerServiceProvider);
+    final currentMode = state.loopMode;
+    LoopMode nextMode;
+    
+    switch (currentMode) {
+      case LoopMode.off:
+        nextMode = LoopMode.all;
+        break;
+      case LoopMode.all:
+        nextMode = LoopMode.one;
+        break;
+      case LoopMode.one:
+        nextMode = LoopMode.off;
+        break;
+    }
+    
+    await audioService.setLoopMode(nextMode);
+  }
+
+  Future<void> toggleShuffle() async {
+    final audioService = ref.read(audioPlayerServiceProvider);
+    await audioService.setShuffleModeEnabled(!state.isShuffleEnabled);
+  }
+
   @override
   void dispose() {
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
     _playingSubscription?.cancel();
     _playerStateSubscription?.cancel();
+    _loopModeSubscription?.cancel();
+    _shuffleModeSubscription?.cancel();
     super.dispose();
   }
 }

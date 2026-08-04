@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:just_audio/just_audio.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_icons.dart';
@@ -79,27 +80,17 @@ class PlayerScreen extends ConsumerWidget {
 
             // 2. Song Info
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      AppText.heading(song.title, maxLines: 1),
+                      AppText.heading(song.title, maxLines: 1, textAlign: TextAlign.center),
                       const SizedBox(height: 4),
-                      AppText.body(song.artist ?? 'Unknown Artist', color: AppColors.textSecondary, maxLines: 1),
+                      AppText.body(song.artist ?? 'Unknown Artist', color: AppColors.textSecondary, maxLines: 1, textAlign: TextAlign.center),
                     ],
                   ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    song.isFavorite ? AppIcons.favorite : AppIcons.favoriteOutline,
-                    color: AppColors.primary,
-                    size: 28,
-                  ),
-                  onPressed: () {
-                    // TODO: Toggle favorite status in Hive
-                  },
                 ),
               ],
             ),
@@ -141,8 +132,11 @@ class PlayerScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.shuffle_rounded, color: AppColors.textSecondary),
-                  onPressed: () {},
+                  icon: Icon(
+                    Icons.shuffle_rounded,
+                    color: playerState.isShuffleEnabled ? AppColors.primary : AppColors.textSecondary,
+                  ),
+                  onPressed: () => playerNotifier.toggleShuffle(),
                 ),
                 IconButton(
                   icon: const Icon(AppIcons.skipPrevious, size: 36, color: AppColors.textPrimary),
@@ -169,8 +163,13 @@ class PlayerScreen extends ConsumerWidget {
                   onPressed: () => playerNotifier.skipToNext(),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.repeat_rounded, color: AppColors.textSecondary),
-                  onPressed: () {},
+                  icon: Icon(
+                    playerState.loopMode == LoopMode.one
+                        ? Icons.repeat_one_rounded
+                        : Icons.repeat_rounded,
+                    color: playerState.loopMode != LoopMode.off ? AppColors.primary : AppColors.textSecondary,
+                  ),
+                  onPressed: () => playerNotifier.toggleRepeatMode(),
                 ),
               ],
             ),
