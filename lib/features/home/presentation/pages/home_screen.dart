@@ -17,7 +17,11 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recentlyPlayed = ref.watch(recentlyPlayedProvider);
-    final allSongsAsync = ref.watch(allSongsProvider);
+    final randomizedSongsAsync = ref.watch(allSongsProvider.select(
+      (asyncSongs) => asyncSongs.whenData(
+        (songs) => List<MusicModel>.from(songs)..shuffle(),
+      ),
+    ));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -72,7 +76,7 @@ class HomeScreen extends ConsumerWidget {
               ),
 
               // --- 1. HERO SPOTLIGHT BANNER (SaaS Feature Card) ---
-              allSongsAsync.when(
+              randomizedSongsAsync.when(
                 data: (allSongs) {
                   if (allSongs.isEmpty) return const SliverToBoxAdapter(child: SizedBox());
                   final featuredSong = allSongs.first;
@@ -143,7 +147,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
 
-              allSongsAsync.when(
+              randomizedSongsAsync.when(
                 data: (allSongs) => SliverList(
                   delegate: SliverChildBuilderDelegate(
                         (context, index) {
